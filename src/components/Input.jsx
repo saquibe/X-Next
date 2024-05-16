@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { HiOutlinePhotograph } from "react-icons/hi";
 import {app} from '../firebase';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { addDoc, collection, getFireStore, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, getFirestore, serverTimestamp } from 'firebase/firestore';
 
 export default function Input() {
   const { data: session } = useSession();
@@ -15,7 +15,7 @@ export default function Input() {
   const [text, setText] = useState('');
   const [postLoading, setPostLoading] = useState(false);
   const imagePicRef = useRef(null);
-  const db = getFireStore(app);
+  const db = getFirestore(app);
   const addImageToPost = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -72,6 +72,7 @@ export default function Input() {
       setText('');
       setImageFileUrl(null);
       setSelectedFile(null);
+      location.reload();
     };
 
   if (!session) return null;
