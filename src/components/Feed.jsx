@@ -12,9 +12,10 @@ export default async function Feed() {
     });
   return (
     <div>
-      {data.map((post) => {
+      {data.map((post) => (
         <Post key={post.id} post={post} id={post.id} />
-      })}
+      ))}
+      Feed
     </div>
   );
 }
