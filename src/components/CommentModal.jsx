@@ -5,9 +5,11 @@ import { modalState, postIdState } from "@/atom/modalAtom";
 import Modal from "react-modal";
 import { HiX } from "react-icons/hi";
 import { useEffect, useState } from "react";
-import { doc, getFirestore, onSnapshot } from "firebase/firestore";
+import { Timestamp, addDoc, collection, doc, getFirestore, onSnapshot, serverTimestamp } from "firebase/firestore";
 const { useSession } = require('next-auth/react');
-import { app } from "../firebase";
+import { app } from "@/firebase";
+import { comment } from "postcss";
+import { useRouter } from "next/navigation";
 
 export default function CommentModal() {
   const [open, setOpen] = useRecoilState(modalState);
@@ -16,6 +18,7 @@ export default function CommentModal() {
   const [post, setPost] = useState({});
   const {data: session} = useSession
   const db = getFirestore(app);
+  const router = useRouter();
 
   useEffect(() => {
     if (postId !== '') {
@@ -31,7 +34,21 @@ export default function CommentModal() {
     }
   }, [postId])
 
-  const sendComment = async () => {}
+  const sendComment = async () => {
+    addDoc(collection(db, 'posts', postId, 'comment'),{
+      name: session.user.name,
+      username: session.user.username,
+      userImg: session.user.image,
+      comment: input,
+      Timestamp: serverTimestamp(),
+    }).then(() => {
+      setInput('');
+      setOpen(false);
+      router.push(`/posts/${postId}`);
+    }).catch((error) => {
+      console.error('Error adding document', error);
+    });
+  };
 
   return (
     <div>
@@ -49,13 +66,9 @@ export default function CommentModal() {
                 onClick={() => setOpen(false)}
               />
             </div>
-            <div className="p-2 flex items-center space-x-1 relative">
+            <div className="flex items-center p-2 space-x-1 relative">
               <span className="w-0.5 h-full z-[-1] absolute left-8 top-11 bg-gray-300"/>
-              <img
-                src={post?.profileImg}
-                alt="user-img"
-                className="h-11 w-11 rounded-full mr-4"
-              />
+              <img src={post?.profileImg} alt="user-img" className="h-11 w-11 rounded-full mr-4"/>
               <h4 className="font-bold sm:text-[16px] text-[15px] hover:underline truncate">
                 {post?.name}
               </h4>
@@ -66,7 +79,7 @@ export default function CommentModal() {
             </p>
             <div className="flex p-3 space-x-3">
               <img 
-                src={session.user.image} 
+                src={session.user.image}
                 alt="user-img"
                 className="h-11 w-11 rounded-full cursor-pointer hover:brightness-95" 
               />
@@ -75,7 +88,7 @@ export default function CommentModal() {
                   <textarea
                     className="w-full border-none outline-none tracking-wide min-h-[50px] text-gray-700 placeholder:text-gray-500"
                     placeholder="Add a comment" 
-                    rows="2"
+                    rows='2'
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                   ></textarea>
